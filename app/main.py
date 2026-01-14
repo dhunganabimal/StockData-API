@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
@@ -5,6 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database import engine, Base, get_db
 from app.models import StockData
+from app import schemas
 from app.scraper import scrape_and_save_task
 Base.metadata.create_all(bind=engine)
 
@@ -45,7 +48,7 @@ def home():
     return {"message": "Scraper API is running"}
 
 
-@app.get("/data")
+@app.get("/data",response_model=List[schemas.DataOut])
 def get_scraped_data(db: Session = Depends(get_db)):
     return db.query(StockData).order_by(StockData.created_at.desc()).all()
 
